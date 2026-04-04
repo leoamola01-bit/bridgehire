@@ -13,10 +13,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// Ensure uploads directory exists
+// Ensure directories exist
 const uploadsDir = 'uploads';
+const dataDir = 'data';
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
+}
+if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
 }
 
 // File upload configuration
@@ -48,6 +52,35 @@ const upload = multer({
     }
 });
 
+// Helper function to save application data
+const saveApplication = (applicationData) => {
+    const fileName = `data/application-${Date.now()}.json`;
+    fs.writeFileSync(fileName, JSON.stringify(applicationData, null, 2));
+    return fileName;
+};
+
+// Helper function to get all applications
+const getAllApplications = () => {
+    const applications = [];
+    if (fs.existsSync('data')) {
+        const files = fs.readdirSync('data');
+        files.forEach(file => {
+            if (file.endsWith('.json') && file.startsWith('application-')) {
+                try {
+                    const data = JSON.parse(fs.readFileSync(path.join('data', file), 'utf8'));
+                    applications.push({
+                        id: file,
+                        ...data
+                    });
+                } catch (err) {
+                    console.error(`Error reading file ${file}:`, err);
+                }
+            }
+        });
+    }
+    return applications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+};
+
 // Application submission endpoint
 app.post('/api/applications', upload.fields([
     { name: 'passport', maxCount: 1 },
@@ -62,8 +95,8 @@ app.post('/api/applications', upload.fields([
     { name: 'otherDocs', maxCount: 10 }
 ]), (req, res) => {
     try {
-        // Log application data (in production, save to database)
         const applicationData = {
+            id: Date.now().toString(),
             type: req.body.type,
             timestamp: new Date().toISOString(),
             personalDetails: {
@@ -78,8 +111,21 @@ app.post('/api/applications', upload.fields([
                 email: req.body.email,
                 address: req.body.address
             },
-            files: req.files
+            files: {}
         };
+
+        // Process uploaded files
+        if (req.files) {
+            Object.keys(req.files).forEach(fieldName => {
+                applicationData.files[fieldName] = req.files[fieldName].map(file => ({
+                    originalname: file.originalname,
+                    filename: file.filename,
+                    path: file.path,
+                    size: file.size,
+                    mimetype: file.mimetype
+                }));
+            });
+        }
 
         if (req.body.type === 'job') {
             applicationData.workDetails = {
@@ -95,16 +141,15 @@ app.post('/api/applications', upload.fields([
             };
         }
 
-        console.log('New application received:', JSON.stringify(applicationData, null, 2));
-
-        // In production, you would:
-        // 1. Save to database (MongoDB/PostgreSQL)
-        // 2. Send email notifications
-        // 3. Move to admin dashboard for review
+        // Save to file
+        saveApplication(applicationData);
+        
+        console.log('New application saved:', applicationData.id);
 
         res.json({ 
             success: true, 
-            message: 'Application received successfully. You will be contacted within 48 hours.' 
+            message: 'Application received successfully. You will be contacted within 48 hours.',
+            applicationId: applicationData.id
         });
 
     } catch (error) {
@@ -113,15 +158,45 @@ app.post('/api/applications', upload.fields([
     }
 });
 
-// Admin endpoint to list applications (basic implementation)
+// Admin endpoint to list all applications
 app.get('/api/admin/applications', (req, res) => {
-    // In production, fetch from database
-    res.json({ 
-        applications: [],
-        message: 'Admin endpoint - connect to database for full functionality'
-    });
+    try {
+        const applications = getAllApplications();
+        res.json({ 
+            applications: applications,
+            total: applications.length
+        });
+    } catch (error) {
+        console.error('Error fetching applications:', error);
+        res.status(500).json({ error: 'Error fetching applications' });
+    }
+});
+
+// Admin endpoint to get single application with file details
+app.get('/api/admin/applications/:id', (req, res) => {
+    try {
+        const applications = getAllApplications();
+        const application = applications.find(app => app.id === req.params.id);
+        if (!application) {
+            return res.status(404).json({ error: 'Application not found' });
+        }
+        res.json(application);
+    } catch (error) {
+        console.error('Error fetching application:', error);
+        res.status(500).json({ error: 'Error fetching application' });
+    }
+});
+
+// Serve uploaded files publicly (for admin viewing)
+app.use('/uploads', express.static('uploads'));
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
 app.listen(PORT, () => {
     console.log(`BridgeHire.AU server running on port ${PORT}`);
+    console.log(`Files served from: http://localhost:${PORT}/uploads/`);
+    console.log(`Admin API: http://localhost:${PORT}/api/admin/applications`);
 });
