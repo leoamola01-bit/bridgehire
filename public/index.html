@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BridgeHire.AU - Your Gateway to Work & Study in Australia</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="#home">BridgeHire.AU</a>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#work">Work in Australia</a></li>
+                <li><a href="#study">Study in Australia</a></li>
+                <li><a href="#info">Information</a></li>
+                <li><a href="#faq">FAQ</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>Your Gateway to Work and Study in Australia</h1>
+            <p class="hero-subtitle">Visa-sponsored jobs and fully funded scholarships made easy</p>
+            <div class="hero-buttons">
+                <a href="#work" class="btn btn-primary">
+                    <i class="fas fa-briefcase"></i> Apply for Jobs
+                </a>
+                <a href="#study" class="btn btn-secondary">
+                    <i class="fas fa-graduation-cap"></i> Apply for Scholarship
+                </a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <i class="fas fa-globe-australia icon-3d"></i>
+        </div>
+    </section>
+
+    <!-- Services Overview -->
+    <section class="services">
+        <div class="container">
+            <h2>Our Services</h2>
+            <div class="services-grid">
+                <div class="service-card glass-card">
+                    <i class="fas fa-briefcase icon-3d"></i>
+                    <h3>Job Placement with Visa Sponsorship</h3>
+                    <p>Secure high-paying jobs in Australia with full visa sponsorship support</p>
+                </div>
+                <div class="service-card glass-card">
+                    <i class="fas fa-graduation-cap icon-3d"></i>
+                    <h3>Fully Funded Scholarships</h3>
+                    <p>Study at top Australian universities with tuition and accommodation covered</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us -->
+    <section class="why-choose">
+        <div class="container">
+            <h2>Why Choose BridgeHire.AU?</h2>
+            <div class="why-grid">
+                <div class="why-item glass-card">
+                    <i class="fas fa-check-circle icon-3d"></i>
+                    <h3>Trusted Process</h3>
+                    <p>Proven track record with high success rates</p>
+                </div>
+                <div class="why-item glass-card">
+                    <i class="fas fa-chart-line icon-3d"></i>
+                    <h3>High Success Rate</h3>
+                    <p>Thousands of successful placements and scholarships</p>
+                </div>
+                <div class="why-item glass-card">
+                    <i class="fas fa-hand-holding-heart icon-3d"></i>
+                    <h3>Full Support</h3>
+                    <p>From application to arrival in Australia</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Work in Australia -->
+    <section id="work" class="work-section">
+        <div class="container">
+            <h2>Work in Australia</h2>
+            <p class="section-subtitle">Discover amazing career opportunities with visa sponsorship</p>
+            
+            <div class="benefits-grid">
+                <div class="benefit glass-card">
+                    <i class="fas fa-dollar-sign icon-3d"></i>
+                    <h3>High Salaries</h3>
+                    <p>AUD 60,000 - 120,000+ annually</p>
+                </div>
+                <div class="benefit glass-card">
+                    <i class="fas fa-shield-alt icon-3d"></i>
+                    <h3>Safe Environment</h3>
+                    <p>World-class safety standards</p>
+                </div>
+                <div class="benefit glass-card">
+                    <i class="fas fa-arrow-up icon-3d"></i>
+                    <h3>Career Growth</h3>
+                    <p>Unlimited professional development</p>
+                </div>
+                <div class="benefit glass-card">
+                    <i class="fas fa-balance-scale icon-3d"></i>
+                    <h3>Work-Life Balance</h3>
+                    <p>Generous leave and flexible hours</p>
+                </div>
+            </div>
+
+            <div class="industries">
+                <h3>Available Industries</h3>
+                <div class="industry-tags">
+                    <span>Construction</span>
+                    <span>Healthcare</span>
+                    <span>Driving & Logistics</span>
+                    <span>Hospitality</span>
+                    <span>Engineering</span>
+                    <span>IT</span>
+                </div>
+            </div>
+
+            <div class="job-application glass-card">
+                <h3>Ready to Apply? <span class="fee-notice">US$30 Application Fee Required</span></h3>
+                <p class="fee-explanation">This non-refundable fee ensures only serious applicants proceed, saving time for genuine candidates.</p>
+                <button class="btn btn-primary" onclick="openJobModal()">
+                    <i class="fas fa-paper-plane"></i> Apply for Job Now
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Study in Australia -->
+    <section id="study" class="study-section">
+        <div class="container">
+            <h2>Study in Australia</h2>
+            <p class="section-subtitle">World-class education with fully funded scholarships</p>
+
+            <div class="study-benefits">
+                <div class="benefit glass-card">
+                    <i class="fas fa-school icon-3d"></i>
+                    <h3>World-Class Education</h3>
+                    <p>Top-ranked universities globally</p>
+                </div>
+                <div class="benefit glass-card">
+                    <i class="fas fa-globe icon-3d"></i>
+                    <h3>International Recognition</h3>
+                    <p>Degrees valued worldwide</p>
+                </div>
+                <div class="benefit glass-card">
+                    <i class="fas fa-briefcase icon-3d"></i>
+                    <h3>Work While Studying</h3>
+                    <p>Up to 48 hours per fortnight</p>
+                </div>
+                <div class="benefit glass-card">
+                    <i class="fas fa-home icon-3d"></i>
+                    <h3>Pathway to PR</h3>
+                    <p>Post-study work visa options</p>
+                </div>
+            </div>
+
+            <!-- Course Requirements -->
+            <div class="course-requirements">
+                <h3>Course Requirements</h3>
+                <div class="requirements-grid">
+                    <div class="req-card no-al-level glass-card">
+                        <i class="fas fa-check-circle icon-3d"></i>
+                        <h4>✅ NO A-Level Required</h4>
+                        <ul>
+                            <li>Certificate Programs (Caregiving, Hospitality, IT)</li>
+                            <li>Diploma Courses</li>
+                            <li>Vocational Training (Plumbing, Welding)</li>
+                            <li>Business & Entrepreneurship</li>
+                            <li>Language Programs</li>
+                        </ul>
+                    </div>
+                    <div class="req-card al-level glass-card">
+                        <i class="fas fa-graduation-cap icon-3d"></i>
+                        <h4>📚 A-Level REQUIRED</h4>
+                        <ul>
+                            <li>University Bachelor's Degrees</li>
+                            <li>Engineering</li>
+                            <li>Medical & Health Sciences</li>
+                            <li>Law Programs</li>
+                            <li>Advanced IT & Computer Science</li>
+                            <li>Accounting & Finance</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="scholarship-application glass-card">
+                <h3>Apply for Scholarship <span class="fee-notice">US$25 Application Fee Required</span></h3>
+                <p class="fee-explanation">This ensures serious applicants and helps maintain quality service.</p>
+                <button class="btn btn-primary" onclick="openScholarshipModal()">
+                    <i class="fas fa-book-open"></i> Apply for Scholarship
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Information Section -->
+    <section id="info" class="info-section">
+        <div class="container">
+            <h2>Important Information</h2>
+            <div class="info-grid">
+                <div class="info-card glass-card">
+                    <i class="fas fa-home icon-3d"></i>
+                    <h3>Life in Australia</h3>
+                    <p>AUD 2,000-3,500/month living costs. Modern accommodation, multicultural society, excellent healthcare.</p>
+                </div>
+                <div class="info-card glass-card">
+                    <i class="fas fa-passport icon-3d"></i>
+                    <h3>Visa Process</h3>
+                    <p>We handle sponsorship. Processing: 4-8 weeks. Full support provided.</p>
+                </div>
+                <div class="info-card glass-card">
+                    <i class="fas fa-money-bill-wave icon-3d"></i>
+                    <h3>Salary Expectations</h3>
+                    <p>Construction: AUD 70k+, Healthcare: AUD 80k+, IT: AUD 90k+, Hospitality: AUD 60k+</p>
+                </div>
+                <div class="info-card glass-card">
+                    <i class="fas fa-university icon-3d"></i>
+                    <h3>Education System</h3>
+                    <p>8 Ivy League universities, 40+ in top 1% globally. Diploma to PhD levels available.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="faq-section">
+        <div class="container">
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-container">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>How long does the process take?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Job applications: 4-8 weeks. Scholarships: 6-12 weeks. Full support throughout.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Is visa sponsorship guaranteed?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>High success rate with qualified candidates. We work with verified sponsors.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Can I apply without experience?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes, for entry-level positions in hospitality, caregiving, and vocational training.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Can I study without A-Level?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes! Certificate, diploma, and vocational programs don't require A-Level.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Are scholarships really fully funded?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes, covers tuition, accommodation, stipend, and health insurance.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Is the application fee refundable?</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>No, it's a processing fee to ensure serious applicants only.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <h2>Contact Us</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <div class="contact-item glass-card">
+                        <i class="fas fa-envelope"></i>
+                        <p>info@bridgehire.au</p>
+                    </div>
+                    <div class="contact-item glass-card">
+                        <i class="fas fa-phone"></i>
+                        <p>+61 2 1234 5678</p>
+                    </div>
+                    <div class="contact-item glass-card">
+                        <i class="fab fa-whatsapp"></i>
+                        <p>+61 488 123 456</p>
+                    </div>
+                    <div class="contact-item glass-card">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <p>Sydney, NSW, Australia</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Job Application Modal -->
+    <div id="jobModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeJobModal()">&times;</span>
+            <h2><i class="fas fa-briefcase"></i> Job Application</h2>
+            <p class="fee-notice">US$30 Application Fee Required (Proof of payment mandatory)</p>
+            <form id="jobForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <h3><i class="fas fa-user"></i> Personal Details</h3>
+                    <div class="form-row">
+                        <input type="text" name="fullName" placeholder="Full Name *" required>
+                        <input type="date" name="dob" required>
+                    </div>
+                    <div class="form-row">
+                        <select name="gender" required>
+                            <option value="">Gender *</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <input type="text" name="nationality" placeholder="Nationality *" required>
+                    </div>
+                    <select name="maritalStatus">
+                        <option value="">Marital Status</option>
+                        <option value="single">Single</option>
+                        <option value="married">Married</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <h3><i class="fas fa-phone"></i> Contact Details</h3>
+                    <input type="tel" name="phone" placeholder="Phone Number *" required>
+                    <input type="email" name="email" placeholder="Email Address *" required>
+                    <input type="text" name="address" placeholder="Residential Address *" required>
+                </div>
+
+                <div class="form-group">
+                    <h3><i class="fas fa-briefcase"></i> Work Details</h3>
+                    <select name="jobCategory" required>
+                        <option value="">Preferred Job Category *</option>
+                        <option value="construction">Construction</option>
+                        <option value="healthcare">Healthcare</option>
+                        <option value="logistics">Driving & Logistics</option>
+                        <option value="hospitality">Hospitality</option>
+                        <option value="engineering">Engineering</option>
+                        <option value="it">IT</option>
+                    </select>
+                    <input type="number" name="experience" placeholder="Years of Experience">
+                    <input type="text" name="skills" placeholder="Skills (comma separated)">
+                </div>
+
+                <div class="form-group">
+                    <h3><i class="fas fa-file-upload"></i> Document Uploads</h3>
+                    <p><strong>Required:</strong></p>
+                    <div class="upload-group">
+                        <label>National ID / Passport *</label>
+                        <input type="file" name="passport" accept=".pdf,.jpg,.png" required>
+                    </div>
+                    <div class="upload-group">
+                        <label>CV / Resume *</label>
+                        <input type="file" name="cv" accept=".pdf,.doc,.docx" required>
+                    </div>
+                    <div class="upload-group">
+                        <label>Birth Certificate *</label>
+                        <input type="file" name="birthCert" accept=".pdf,.jpg,.png" required>
+                    </div>
+                    <div class="upload-group">
+                        <label>Proof of Payment US$30 * (Screenshot/Receipt)</label>
+                        <input type="file" name="paymentProof" accept=".pdf,.jpg,.png" required>
+                    </div>
+                    
+                    <p><strong>Optional:</strong></p>
+                    <div class="upload-group">
+                        <label>O-Level Certificate</label>
+                        <input type="file" name="olevel" accept=".pdf,.jpg,.png">
+                    </div>
+                    <div class="upload-group">
+                        <label>A-Level Certificate</label>
+                        <input type="file" name="alevel" accept=".pdf,.jpg,.png">
+                    </div>
+                    <div class="upload-group">
+                        <label>Diploma / Degree</label>
+                        <input type="file" name="diploma" accept=".pdf,.jpg,.png">
+                    </div>
+                    <div class="upload-group">
+                        <label>Other Documents</label>
+                        <input type="file" name="otherDocs[]" accept=".pdf,.jpg,.png" multiple>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary full-width">
+                    <i class="fas fa-paper-plane"></i> Submit Application
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scholarship Modal -->
+    <div id="scholarshipModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeScholarshipModal()">&times;</span>
+            <h2><i class="fas fa-graduation-cap"></i> Scholarship Application</h2>
+            <p class="fee-notice">US$25 Application Fee Required (Proof of payment mandatory)</p>
+            <form id="scholarshipForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <h3><i class="fas fa-user"></i> Personal Details</h3>
+                    <div class="form-row">
+                        <input type="text" name="fullName" placeholder="Full Name *" required>
+                        <input type="date" name="dob" required>
+                    </div>
+                    <select name="gender" required>
+                        <option value="">Gender *</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <input type="text" name="nationality" placeholder="Nationality *" required>
+                </div>
+
+                <div class="form-group">
+                    <h3><i class="fas fa-phone"></i> Contact Details</h3>
+                    <input type="tel" name="phone" placeholder="Phone Number *" required>
+                    <input type="email" name="email" placeholder="Email Address *" required>
+                    <input type="text" name="address" placeholder="Residential Address *" required>
+                </div>
+
+                <div class="form-group">
+                    <h3><i class="fas fa-book"></i> Education Background</h3>
+                    <div class="form-row">
+                        <textarea name="olevel" placeholder="O-Level Results (Subjects + Grades) *&#10;Minimum 5 passes including English" required></textarea>
+                    </div>
+                    <textarea name="alevel" placeholder="A-Level Results (if available)"></textarea>
+                    <input type="text" name="desiredCourse" placeholder="Desired Course of Study *" required>
+                </div>
+
+                <div class="form-group">
+                    <h3><i class="fas fa-file-upload"></i> Document Uploads</h3>
+                    <p><strong>Required:</strong></p>
+                    <div class="upload-group">
+                        <label>National ID / Passport *</label>
+                        <input type="file" name="passport" accept=".pdf,.jpg,.png" required>
+                    </div>
+                    <div class="upload-group">
+                        <label>O-Level Certificate * (Must include English)</label>
+                        <input type="file" name="olevelCert" accept=".pdf,.jpg,.png" required>
+                    </div>
+                    <div class="upload-group">
+                        <label>Proof of Payment US$25 * (Screenshot/Receipt)</label>
+                        <input type="file" name="paymentProof" accept=".pdf,.jpg,.png" required>
+                    </div>
+                    
+                    <p><strong>Optional:</strong></p>
+                    <div class="upload-group">
+                        <label>A-Level Certificate</label>
+                        <input type="file" name="alevelCert" accept=".pdf,.jpg,.png">
+                    </div>
+                    <div class="upload-group">
+                        <label>Other Academic Certificates</label>
+                        <input type="file" name="otherDocs[]" accept=".pdf,.jpg,.png" multiple>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary full-width">
+                    <i class="fas fa-rocket"></i> Submit Scholarship Application
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal success-modal">
+        <div class="modal-content">
+            <i class="fas fa-check-circle"></i>
+            <h2>Application Submitted Successfully!</h2>
+            <p>Thank you for your application. You will receive a confirmation email shortly. Our team will review your documents and contact you within 48 hours.</p>
+            <button class="btn btn-primary" onclick="closeSuccessModal()">
+                <i class="fas fa-thumbs-up"></i> Close
+            </button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
