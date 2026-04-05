@@ -81,7 +81,7 @@ window.onclick = function(event) {
 };
 
 // 🔥 IMPORTANT: PUT YOUR RENDER BACKEND URL HERE
-const API_URL = "https://your-app-name.onrender.com/api/applications";
+const API_URL = "https://bridgehire-tmd7.onrender.com/api/applications";
 
 // ================= JOB FORM =================
 document.getElementById('jobForm').addEventListener('submit', async function(e) {
