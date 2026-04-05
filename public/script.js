@@ -7,7 +7,6 @@ hamburger.addEventListener('click', () => {
     navMenu.classList.toggle('active');
 });
 
-// Close mobile menu when clicking on a link
 document.querySelectorAll('.nav-menu a').forEach(link => {
     link.addEventListener('click', () => {
         hamburger.classList.remove('active');
@@ -15,7 +14,7 @@ document.querySelectorAll('.nav-menu a').forEach(link => {
     });
 });
 
-// Smooth scrolling for navigation links
+// Smooth scrolling
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         e.preventDefault();
@@ -66,7 +65,7 @@ function closeSuccessModal() {
     document.body.style.overflow = 'auto';
 }
 
-// Close modals when clicking outside
+// Close modals
 window.onclick = function(event) {
     const jobModal = document.getElementById('jobModal');
     const scholarshipModal = document.getElementById('scholarshipModal');
@@ -79,17 +78,27 @@ window.onclick = function(event) {
     } else if (event.target === successModal) {
         closeSuccessModal();
     }
-}
+};
 
-// Form Submission
+// 🔥 IMPORTANT: PUT YOUR RENDER BACKEND URL HERE
+const API_URL = "https://your-app-name.onrender.com/api/applications";
+
+// ================= JOB FORM =================
 document.getElementById('jobForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
+
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+
+    // 🔥 Change button to submitting
+    submitBtn.innerHTML = "Submitting...";
+    submitBtn.disabled = true;
+
     const formData = new FormData(this);
     formData.append('type', 'job');
     
     try {
-        const response = await fetch('/api/applications', {
+        const response = await fetch(API_URL, {
             method: 'POST',
             body: formData
         });
@@ -104,16 +113,27 @@ document.getElementById('jobForm').addEventListener('submit', async function(e) 
     } catch (error) {
         alert('Network error. Please check your connection.');
     }
+
+    // 🔥 Restore button
+    submitBtn.innerHTML = originalText;
+    submitBtn.disabled = false;
 });
 
+// ================= SCHOLARSHIP FORM =================
 document.getElementById('scholarshipForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
+
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+
+    submitBtn.innerHTML = "Submitting...";
+    submitBtn.disabled = true;
+
     const formData = new FormData(this);
     formData.append('type', 'scholarship');
     
     try {
-        const response = await fetch('/api/applications', {
+        const response = await fetch(API_URL, {
             method: 'POST',
             body: formData
         });
@@ -128,9 +148,12 @@ document.getElementById('scholarshipForm').addEventListener('submit', async func
     } catch (error) {
         alert('Network error. Please check your connection.');
     }
+
+    submitBtn.innerHTML = originalText;
+    submitBtn.disabled = false;
 });
 
-// Intersection Observer for animations
+// Animations
 const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
@@ -145,7 +168,6 @@ const observer = new IntersectionObserver((entries) => {
     });
 }, observerOptions);
 
-// Observe elements for animation
 document.querySelectorAll('.service-card, .why-item, .benefit, .info-card').forEach(el => {
     el.style.opacity = '0';
     el.style.transform = 'translateY(30px)';
