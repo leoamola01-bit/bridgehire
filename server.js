@@ -2,12 +2,17 @@ require('dotenv').config();
 
 const express = require('express');
 const multer = require('multer');
-const path = require('path');
 const cors = require('cors');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// 🔥 CHECK ENV VARIABLES
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error('❌ Missing Supabase environment variables. Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.');
+    process.exit(1);
+}
 
 // 🔥 SUPABASE CONFIG
 const supabase = createClient(
@@ -16,27 +21,31 @@ const supabase = createClient(
 );
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: '*', // allow all origins; change to your frontend URL in production
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// Multer (memory storage instead of disk)
+// Multer (memory storage)
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: {
-        fileSize: 10 * 1024 * 1024 // 10MB
+        fileSize: 10 * 1024 * 1024 // 10MB max
     }
 });
 
-// Upload file to Supabase
+// Upload file to Supabase storage
 const uploadToSupabase = async (file, folder) => {
     const fileName = `${folder}/${Date.now()}-${file.originalname}`;
 
     const { data, error } = await supabase.storage
         .from('applications')
         .upload(fileName, file.buffer, {
-            contentType: file.mimetype
+            contentType: file.mimetype,
+            upsert: true
         });
 
     if (error) throw error;
@@ -83,14 +92,13 @@ app.post('/api/applications', upload.fields([
             files: {}
         };
 
-        // 🔥 Upload files to Supabase
+        // 🔥 Upload files
         if (req.files) {
             for (const fieldName of Object.keys(req.files)) {
                 applicationData.files[fieldName] = [];
 
                 for (const file of req.files[fieldName]) {
                     const fileUrl = await uploadToSupabase(file, req.body.type);
-
                     applicationData.files[fieldName].push({
                         originalname: file.originalname,
                         url: fileUrl,
@@ -119,18 +127,16 @@ app.post('/api/applications', upload.fields([
         // 🔥 Save to Supabase DB
         const { error } = await supabase
             .from('applications')
-            .insert([
-                {
-                    id: applicationId,
-                    type: applicationData.type,
-                    timestamp: applicationData.timestamp,
-                    data: applicationData
-                }
-            ]);
+            .insert([{
+                id: applicationId,
+                type: applicationData.type,
+                timestamp: applicationData.timestamp,
+                data: applicationData
+            }]);
 
         if (error) throw error;
 
-        console.log('Saved to Supabase:', applicationId);
+        console.log('✅ Saved to Supabase:', applicationId);
 
         res.json({
             success: true,
@@ -139,7 +145,7 @@ app.post('/api/applications', upload.fields([
         });
 
     } catch (error) {
-        console.error('ERROR:', error);
+        console.error('❌ ERROR:', error);
         res.status(500).json({ error: 'Failed to submit application' });
     }
 });
@@ -154,21 +160,18 @@ app.get('/api/admin/applications', async (req, res) => {
 
         if (error) throw error;
 
-        res.json({
-            applications: data,
-            total: data.length
-        });
+        res.json({ applications: data, total: data.length });
 
     } catch (error) {
         res.status(500).json({ error: 'Error fetching applications' });
     }
 });
 
-// Health
+// Health check
 app.get('/health', (req, res) => {
     res.json({ status: 'OK' });
 });
 
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`🚀 Server running on port ${PORT}`);
 });
