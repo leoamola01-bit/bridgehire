@@ -1,11 +1,19 @@
+require('dotenv').config();
+
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
 const cors = require('cors');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// 🔥 SUPABASE CONFIG
+const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+);
 
 // Middleware
 app.use(cors());
@@ -13,72 +21,31 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// Ensure directories exist
-const uploadsDir = 'uploads';
-const dataDir = 'data';
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-}
-if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-}
-
-// File upload configuration
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, `${req.body.type}-${uniqueSuffix}-${file.originalname}`);
-    }
-});
-
+// Multer (memory storage instead of disk)
 const upload = multer({
-    storage: storage,
+    storage: multer.memoryStorage(),
     limits: {
-        fileSize: 10 * 1024 * 1024 // 10MB limit
-    },
-    fileFilter: (req, file, cb) => {
-        const allowedTypes = /jpeg|jpg|png|pdf|doc|docx/;
-        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-        const mimetype = allowedTypes.test(file.mimetype);
-        
-        if (mimetype && extname) {
-            return cb(null, true);
-        } else {
-            cb(new Error('Only PDF, JPG, PNG, DOC, DOCX files are allowed'));
-        }
+        fileSize: 10 * 1024 * 1024 // 10MB
     }
 });
 
-// Helper function to save application data
-const saveApplication = (applicationData) => {
-    const fileName = `data/application-${Date.now()}.json`;
-    fs.writeFileSync(fileName, JSON.stringify(applicationData, null, 2));
-    return fileName;
-};
+// Upload file to Supabase
+const uploadToSupabase = async (file, folder) => {
+    const fileName = `${folder}/${Date.now()}-${file.originalname}`;
 
-// Helper function to get all applications
-const getAllApplications = () => {
-    const applications = [];
-    if (fs.existsSync('data')) {
-        const files = fs.readdirSync('data');
-        files.forEach(file => {
-            if (file.endsWith('.json') && file.startsWith('application-')) {
-                try {
-                    const data = JSON.parse(fs.readFileSync(path.join('data', file), 'utf8'));
-                    applications.push({
-                        id: file,
-                        ...data
-                    });
-                } catch (err) {
-                    console.error(`Error reading file ${file}:`, err);
-                }
-            }
+    const { data, error } = await supabase.storage
+        .from('applications')
+        .upload(fileName, file.buffer, {
+            contentType: file.mimetype
         });
-    }
-    return applications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    if (error) throw error;
+
+    const { data: publicUrl } = supabase.storage
+        .from('applications')
+        .getPublicUrl(fileName);
+
+    return publicUrl.publicUrl;
 };
 
 // Application submission endpoint
@@ -93,10 +60,12 @@ app.post('/api/applications', upload.fields([
     { name: 'olevelCert', maxCount: 1 },
     { name: 'alevelCert', maxCount: 1 },
     { name: 'otherDocs', maxCount: 10 }
-]), (req, res) => {
+]), async (req, res) => {
     try {
+        const applicationId = Date.now().toString();
+
         const applicationData = {
-            id: Date.now().toString(),
+            id: applicationId,
             type: req.body.type,
             timestamp: new Date().toISOString(),
             personalDetails: {
@@ -114,19 +83,25 @@ app.post('/api/applications', upload.fields([
             files: {}
         };
 
-        // Process uploaded files
+        // 🔥 Upload files to Supabase
         if (req.files) {
-            Object.keys(req.files).forEach(fieldName => {
-                applicationData.files[fieldName] = req.files[fieldName].map(file => ({
-                    originalname: file.originalname,
-                    filename: file.filename,
-                    path: file.path,
-                    size: file.size,
-                    mimetype: file.mimetype
-                }));
-            });
+            for (const fieldName of Object.keys(req.files)) {
+                applicationData.files[fieldName] = [];
+
+                for (const file of req.files[fieldName]) {
+                    const fileUrl = await uploadToSupabase(file, req.body.type);
+
+                    applicationData.files[fieldName].push({
+                        originalname: file.originalname,
+                        url: fileUrl,
+                        size: file.size,
+                        mimetype: file.mimetype
+                    });
+                }
+            }
         }
 
+        // Extra data
         if (req.body.type === 'job') {
             applicationData.workDetails = {
                 jobCategory: req.body.jobCategory,
@@ -141,62 +116,59 @@ app.post('/api/applications', upload.fields([
             };
         }
 
-        // Save to file
-        saveApplication(applicationData);
-        
-        console.log('New application saved:', applicationData.id);
+        // 🔥 Save to Supabase DB
+        const { error } = await supabase
+            .from('applications')
+            .insert([
+                {
+                    id: applicationId,
+                    type: applicationData.type,
+                    timestamp: applicationData.timestamp,
+                    data: applicationData
+                }
+            ]);
 
-        res.json({ 
-            success: true, 
-            message: 'Application received successfully. You will be contacted within 48 hours.',
-            applicationId: applicationData.id
+        if (error) throw error;
+
+        console.log('Saved to Supabase:', applicationId);
+
+        res.json({
+            success: true,
+            message: 'Application submitted successfully',
+            applicationId
         });
 
     } catch (error) {
-        console.error('Application error:', error);
-        res.status(500).json({ error: 'Server error processing application' });
+        console.error('ERROR:', error);
+        res.status(500).json({ error: 'Failed to submit application' });
     }
 });
 
-// Admin endpoint to list all applications
-app.get('/api/admin/applications', (req, res) => {
+// Admin: get all applications
+app.get('/api/admin/applications', async (req, res) => {
     try {
-        const applications = getAllApplications();
-        res.json({ 
-            applications: applications,
-            total: applications.length
+        const { data, error } = await supabase
+            .from('applications')
+            .select('*')
+            .order('timestamp', { ascending: false });
+
+        if (error) throw error;
+
+        res.json({
+            applications: data,
+            total: data.length
         });
+
     } catch (error) {
-        console.error('Error fetching applications:', error);
         res.status(500).json({ error: 'Error fetching applications' });
     }
 });
 
-// Admin endpoint to get single application with file details
-app.get('/api/admin/applications/:id', (req, res) => {
-    try {
-        const applications = getAllApplications();
-        const application = applications.find(app => app.id === req.params.id);
-        if (!application) {
-            return res.status(404).json({ error: 'Application not found' });
-        }
-        res.json(application);
-    } catch (error) {
-        console.error('Error fetching application:', error);
-        res.status(500).json({ error: 'Error fetching application' });
-    }
-});
-
-// Serve uploaded files publicly (for admin viewing)
-app.use('/uploads', express.static('uploads'));
-
-// Health check endpoint
+// Health
 app.get('/health', (req, res) => {
-    res.json({ status: 'OK', timestamp: new Date().toISOString() });
+    res.json({ status: 'OK' });
 });
 
 app.listen(PORT, () => {
-    console.log(`BridgeHire.AU server running on port ${PORT}`);
-    console.log(`Files served from: http://localhost:${PORT}/uploads/`);
-    console.log(`Admin API: http://localhost:${PORT}/api/admin/applications`);
+    console.log(`Server running on port ${PORT}`);
 });
