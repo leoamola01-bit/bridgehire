@@ -31,14 +31,25 @@
 
         .card {
             background: white;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .section {
+            margin-top: 10px;
+        }
+
+        .section h4 {
+            margin-bottom: 5px;
+            color: #333;
         }
 
         .files a {
             display: block;
             color: blue;
+            margin: 3px 0;
         }
     </style>
 </head>
@@ -65,7 +76,7 @@ async function loadApplications() {
     try {
         const res = await fetch('/api/admin/applications', {
             headers: {
-                "Authorization": key
+                "Authorization": key.trim()
             }
         });
 
@@ -87,13 +98,42 @@ async function loadApplications() {
 
             div.innerHTML = `
                 <h3>${info.personalDetails.fullName}</h3>
-                <p><b>Type:</b> ${info.type}</p>
-                <p><b>Email:</b> ${info.contactDetails.email}</p>
-                <p><b>Phone:</b> ${info.contactDetails.phone}</p>
-                <p><b>Nationality:</b> ${info.personalDetails.nationality}</p>
-                <div class="files">
-                    <b>Files:</b>
-                    ${renderFiles(info.files)}
+                <p><b>Application Type:</b> ${info.type}</p>
+
+                <div class="section">
+                    <h4>Personal Details</h4>
+                    <p><b>DOB:</b> ${info.personalDetails.dob || ''}</p>
+                    <p><b>Gender:</b> ${info.personalDetails.gender || ''}</p>
+                    <p><b>Marital Status:</b> ${info.personalDetails.maritalStatus || ''}</p>
+                    <p><b>Nationality:</b> ${info.personalDetails.nationality || ''}</p>
+                </div>
+
+                <div class="section">
+                    <h4>Contact</h4>
+                    <p><b>Email:</b> ${info.contactDetails.email}</p>
+                    <p><b>Phone:</b> ${info.contactDetails.phone}</p>
+                    <p><b>Address:</b> ${info.contactDetails.address}</p>
+                </div>
+
+                ${info.type === 'job' ? `
+                <div class="section">
+                    <h4>Work Details</h4>
+                    <p><b>Job Category:</b> ${info.workDetails?.jobCategory || ''}</p>
+                    <p><b>Experience:</b> ${info.workDetails?.experience || ''} years</p>
+                    <p><b>Skills:</b> ${info.workDetails?.skills || ''}</p>
+                </div>
+                ` : `
+                <div class="section">
+                    <h4>Education</h4>
+                    <p><b>Desired Course:</b> ${info.education?.desiredCourse || ''}</p>
+                </div>
+                `}
+
+                <div class="section">
+                    <h4>Files</h4>
+                    <div class="files">
+                        ${renderFiles(info.files)}
+                    </div>
                 </div>
             `;
 
@@ -108,13 +148,15 @@ async function loadApplications() {
 function renderFiles(files) {
     let html = "";
 
+    if (!files) return "No files";
+
     for (let key in files) {
         files[key].forEach(file => {
             html += `<a href="${file.url}" target="_blank">${file.originalname}</a>`;
         });
     }
 
-    return html;
+    return html || "No files uploaded";
 }
 </script>
 
