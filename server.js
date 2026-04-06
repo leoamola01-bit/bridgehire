@@ -3,45 +3,53 @@ require('dotenv').config();
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 🔥 CHECK ENV VARIABLES
+// 🔥 ENV CHECK
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    console.error('❌ Missing Supabase environment variables. Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.');
+    console.error('❌ Missing Supabase ENV variables');
     process.exit(1);
 }
 
-// 🔥 SUPABASE CONFIG
+// 🔥 SUPABASE
 const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// Middleware
+// 🔐 RATE LIMIT (ANTI-SPAM)
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 min
+    max: 50,
+    message: "Too many requests. Try again later."
+});
+app.use(limiter);
+
+// 🔐 CORS (CHANGE THIS AFTER DEPLOY)
 app.use(cors({
-    origin: '*', // allow all origins; change to your frontend URL in production
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    origin: '*', // 🔥 later replace with your frontend URL
 }));
+
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// Multer (memory storage)
+// 🔥 MULTER
 const upload = multer({
     storage: multer.memoryStorage(),
-    limits: {
-        fileSize: 10 * 1024 * 1024 // 10MB max
-    }
+    limits: { fileSize: 10 * 1024 * 1024 }
 });
 
-// Upload file to Supabase storage
+// 🔥 UPLOAD TO SUPABASE
 const uploadToSupabase = async (file, folder) => {
     const fileName = `${folder}/${Date.now()}-${file.originalname}`;
 
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
         .from('applications')
         .upload(fileName, file.buffer, {
             contentType: file.mimetype,
@@ -50,14 +58,14 @@ const uploadToSupabase = async (file, folder) => {
 
     if (error) throw error;
 
-    const { data: publicUrl } = supabase.storage
+    const { data } = supabase.storage
         .from('applications')
         .getPublicUrl(fileName);
 
-    return publicUrl.publicUrl;
+    return data.publicUrl;
 };
 
-// Application submission endpoint
+// 🚀 SUBMIT APPLICATION
 app.post('/api/applications', upload.fields([
     { name: 'passport', maxCount: 1 },
     { name: 'cv', maxCount: 1 },
@@ -92,16 +100,17 @@ app.post('/api/applications', upload.fields([
             files: {}
         };
 
-        // 🔥 Upload files
+        // Upload files
         if (req.files) {
             for (const fieldName of Object.keys(req.files)) {
                 applicationData.files[fieldName] = [];
 
                 for (const file of req.files[fieldName]) {
-                    const fileUrl = await uploadToSupabase(file, req.body.type);
+                    const url = await uploadToSupabase(file, req.body.type);
+
                     applicationData.files[fieldName].push({
                         originalname: file.originalname,
-                        url: fileUrl,
+                        url,
                         size: file.size,
                         mimetype: file.mimetype
                     });
@@ -124,7 +133,7 @@ app.post('/api/applications', upload.fields([
             };
         }
 
-        // 🔥 Save to Supabase DB
+        // Save to DB
         const { error } = await supabase
             .from('applications')
             .insert([{
@@ -136,11 +145,10 @@ app.post('/api/applications', upload.fields([
 
         if (error) throw error;
 
-        console.log('✅ Saved to Supabase:', applicationId);
+        console.log('✅ Saved:', applicationId);
 
         res.json({
             success: true,
-            message: 'Application submitted successfully',
             applicationId
         });
 
@@ -150,8 +158,14 @@ app.post('/api/applications', upload.fields([
     }
 });
 
-// Admin: get all applications
+// 🔐 ADMIN ROUTE
 app.get('/api/admin/applications', async (req, res) => {
+    const adminKey = req.headers.authorization;
+
+    if (adminKey !== "my-secret-key") {
+        return res.status(403).json({ error: "Unauthorized" });
+    }
+
     try {
         const { data, error } = await supabase
             .from('applications')
@@ -160,14 +174,17 @@ app.get('/api/admin/applications', async (req, res) => {
 
         if (error) throw error;
 
-        res.json({ applications: data, total: data.length });
+        res.json({
+            applications: data,
+            total: data.length
+        });
 
     } catch (error) {
         res.status(500).json({ error: 'Error fetching applications' });
     }
 });
 
-// Health check
+// HEALTH CHECK
 app.get('/health', (req, res) => {
     res.json({ status: 'OK' });
 });
