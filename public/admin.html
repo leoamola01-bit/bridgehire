@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .login {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        input {
+            padding: 10px;
+            width: 250px;
+        }
+
+        button {
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+
+        .card {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+
+        .files a {
+            display: block;
+            color: blue;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Admin Dashboard</h1>
+
+<div class="login">
+    <input type="password" id="adminKey" placeholder="Enter Admin Key">
+    <button onclick="loadApplications()">Load Applications</button>
+</div>
+
+<div id="applications"></div>
+
+<script>
+async function loadApplications() {
+    const key = document.getElementById('adminKey').value;
+
+    if (!key) {
+        alert("Enter admin key");
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/admin/applications', {
+            headers: {
+                "Authorization": key
+            }
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            alert(data.error);
+            return;
+        }
+
+        const container = document.getElementById('applications');
+        container.innerHTML = "";
+
+        data.applications.forEach(app => {
+            const div = document.createElement('div');
+            div.className = 'card';
+
+            const info = app.data;
+
+            div.innerHTML = `
+                <h3>${info.personalDetails.fullName}</h3>
+                <p><b>Type:</b> ${info.type}</p>
+                <p><b>Email:</b> ${info.contactDetails.email}</p>
+                <p><b>Phone:</b> ${info.contactDetails.phone}</p>
+                <p><b>Nationality:</b> ${info.personalDetails.nationality}</p>
+                <div class="files">
+                    <b>Files:</b>
+                    ${renderFiles(info.files)}
+                </div>
+            `;
+
+            container.appendChild(div);
+        });
+
+    } catch (err) {
+        alert("Failed to load applications");
+    }
+}
+
+function renderFiles(files) {
+    let html = "";
+
+    for (let key in files) {
+        files[key].forEach(file => {
+            html += `<a href="${file.url}" target="_blank">${file.originalname}</a>`;
+        });
+    }
+
+    return html;
+}
+</script>
+
+</body>
+</html>
