@@ -22,6 +22,7 @@
                 <li><a href="#info">Information</a></li>
                 <li><a href="#faq">FAQ</a></li>
                 <li><a href="#contact">Contact</a></li>
+                <li><a href="#status"><i class="fas fa-chart-line"></i> Check Status</a></li>
             </ul>
             <div class="hamburger">
                 <span></span>
@@ -42,6 +43,9 @@
                 </a>
                 <a href="#study" class="btn btn-secondary">
                     <i class="fas fa-graduation-cap"></i> Apply for Scholarship
+                </a>
+                <a href="#status" class="btn btn-outline">
+                    <i class="fas fa-chart-line"></i> Check Application Status
                 </a>
             </div>
         </div>
@@ -332,6 +336,105 @@
         </div>
     </section>
 
+    <!-- Application Status Dashboard -->
+    <section id="status" class="status-section">
+        <div class="container">
+            <h2><i class="fas fa-chart-line"></i> Check Your Application Status</h2>
+            <p class="section-subtitle">Track your application progress and stay updated</p>
+
+            <!-- Status Check Form -->
+            <div class="status-card glass-card">
+                <h3><i class="fas fa-search"></i> Enter Your Details</h3>
+                <p>Enter your email address and application ID to view your application status</p>
+                
+                <div class="status-help">
+                    <p><i class="fas fa-info-circle"></i> <strong>How to get your Application ID:</strong></p>
+                    <ul>
+                        <li>Application ID is provided after successful submission</li>
+                        <li>Check your email for confirmation (includes Application ID)</li>
+                        <li>Contact support if you can't find your ID</li>
+                    </ul>
+                    <p class="apply-link">
+                        <strong>Don't have an Application ID?</strong> 
+                        <a href="#work" class="btn-link">Apply for a Job</a> or 
+                        <a href="#study" class="btn-link">Apply for Scholarship</a>
+                    </p>
+                </div>
+
+                <form id="statusForm">
+                    <div class="form-row">
+                        <input type="email" id="email" placeholder="Email Address *" required>
+                        <input type="text" id="applicationId" placeholder="Application ID *" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Check Status
+                    </button>
+                </form>
+            </div>
+
+            <!-- Application Status Display -->
+            <div id="applicationStatus" class="application-status" style="display: none;">
+                <div class="status-card glass-card">
+                    <div class="status-header">
+                        <h3><i class="fas fa-file-alt"></i> Application Details</h3>
+                        <div id="statusBadge" class="status-badge"></div>
+                    </div>
+
+                    <div class="application-info">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label>Application ID:</label>
+                                <span id="appId"></span>
+                            </div>
+                            <div class="info-item">
+                                <label>Application Type:</label>
+                                <span id="appType"></span>
+                            </div>
+                            <div class="info-item">
+                                <label>Submitted Date:</label>
+                                <span id="submittedDate"></span>
+                            </div>
+                            <div class="info-item">
+                                <label>Full Name:</label>
+                                <span id="fullName"></span>
+                            </div>
+                            <div class="info-item">
+                                <label>Email:</label>
+                                <span id="emailDisplay"></span>
+                            </div>
+                            <div class="info-item">
+                                <label>Phone:</label>
+                                <span id="phone"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Timeline -->
+                    <div class="progress-section">
+                        <h4><i class="fas fa-tasks"></i> Application Progress</h4>
+                        <div class="timeline" id="timeline">
+                            <!-- Timeline items will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Documents Section -->
+                    <div class="documents-section">
+                        <h4><i class="fas fa-file-upload"></i> Submitted Documents</h4>
+                        <div class="documents-grid" id="documentsGrid">
+                            <!-- Documents will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Notes Section -->
+                    <div class="notes-section" id="notesSection" style="display: none;">
+                        <h4><i class="fas fa-sticky-note"></i> Important Notes</h4>
+                        <div class="notes-content" id="notesContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Job Application Modal -->
     <div id="jobModal" class="modal">
         <div class="modal-content">
@@ -343,7 +446,10 @@
                     <h3><i class="fas fa-user"></i> Personal Details</h3>
                     <div class="form-row">
                         <input type="text" name="fullName" placeholder="Full Name *" required>
-                        <input type="date" name="dob" required>
+                        <div class="date-input-wrapper">
+                            <label for="jobDob">Date of Birth *</label>
+                            <input type="date" id="jobDob" name="dob" required>
+                        </div>
                     </div>
                     <div class="form-row">
                         <select name="gender" required>
@@ -440,7 +546,10 @@
                     <h3><i class="fas fa-user"></i> Personal Details</h3>
                     <div class="form-row">
                         <input type="text" name="fullName" placeholder="Full Name *" required>
-                        <input type="date" name="dob" required>
+                        <div class="date-input-wrapper">
+                            <label for="scholarshipDob">Date of Birth *</label>
+                            <input type="date" id="scholarshipDob" name="dob" required>
+                        </div>
                     </div>
                     <select name="gender" required>
                         <option value="">Gender *</option>
@@ -507,6 +616,18 @@
             <i class="fas fa-check-circle"></i>
             <h2>Application Submitted Successfully!</h2>
             <p>Thank you for your application. You will receive a confirmation email shortly. Our team will review your documents and contact you within 48 hours.</p>
+            
+            <div class="application-id-section">
+                <h3><i class="fas fa-id-card"></i> Your Application ID</h3>
+                <div class="application-id-display">
+                    <strong id="submittedApplicationId">Loading...</strong>
+                </div>
+                <p class="application-id-note">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>Save this ID!</strong> You'll need it along with your email address to check your application status.
+                </p>
+            </div>
+            
             <button class="btn btn-primary" onclick="closeSuccessModal()">
                 <i class="fas fa-thumbs-up"></i> Close
             </button>

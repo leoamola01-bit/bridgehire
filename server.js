@@ -184,6 +184,38 @@ app.get('/api/admin/applications', async (req, res) => {
     }
 });
 
+// 🚀 CUSTOMER STATUS CHECK
+app.post('/api/status', async (req, res) => {
+    try {
+        const { email, applicationId } = req.body;
+
+        if (!email || !applicationId) {
+            return res.status(400).json({ error: 'Email and Application ID are required' });
+        }
+
+        // Find application by ID and email
+        const { data, error } = await supabase
+            .from('applications')
+            .select('*')
+            .eq('id', applicationId)
+            .eq('data->contactDetails->email', email)
+            .single();
+
+        if (error || !data) {
+            return res.status(404).json({ error: 'Application not found. Please check your email and application ID.' });
+        }
+
+        res.json({
+            success: true,
+            application: data
+        });
+
+    } catch (error) {
+        console.error('Status check error:', error);
+        res.status(500).json({ error: 'Error checking application status' });
+    }
+});
+
 // HEALTH CHECK
 app.get('/health', (req, res) => {
     res.json({ status: 'OK' });
