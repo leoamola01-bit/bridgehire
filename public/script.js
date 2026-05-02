@@ -82,12 +82,17 @@ window.onclick = function(event) {
     }
 };
 
-// 🔥 IMPORTANT: PUT YOUR RENDER BACKEND URL HERE
-const API_URL = window.location.hostname === 'localhost' && window.location.port === '3000'
-    ? '/api/applications'
-    : window.location.hostname === 'localhost' && window.location.port === '5500'
-    ? 'http://127.0.0.1:3000/api/applications'
-    : "https://bridgehire-tmd7.onrender.com/api/applications";
+// 🔥 IMPORTANT: Dynamic API URL detection
+const getAPIURL = () => {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return (window.location.port === '3000' || window.location.port === '5500') 
+            ? '/api/applications'
+            : 'http://127.0.0.1:3000/api/applications';
+    }
+    // For deployed environments (Render, etc.), use the current domain
+    return `${window.location.protocol}//${window.location.host}/api/applications`;
+};
+const API_URL = getAPIURL();
 
 // ================= JOB FORM =================
 document.getElementById('jobForm').addEventListener('submit', async function(e) {
@@ -118,10 +123,12 @@ document.getElementById('jobForm').addEventListener('submit', async function(e) 
             document.getElementById('successModal').style.display = 'block';
             this.reset();
         } else {
+            console.error('Application submission error:', data);
             alert(data.error || 'Error submitting application. Please try again.');
         }
     } catch (error) {
-        alert('Network error. Please check your connection.');
+        console.error('Network error:', error);
+        alert('Network error: ' + error.message + '. Please check your connection.');
     }
 
     // 🔥 Restore button
@@ -157,10 +164,12 @@ document.getElementById('scholarshipForm').addEventListener('submit', async func
             document.getElementById('successModal').style.display = 'block';
             this.reset();
         } else {
+            console.error('Application submission error:', data);
             alert(data.error || 'Error submitting application. Please try again.');
         }
     } catch (error) {
-        alert('Network error. Please check your connection.');
+        console.error('Network error:', error);
+        alert('Network error: ' + error.message + '. Please check your connection.');
     }
 
     submitBtn.innerHTML = originalText;
@@ -190,7 +199,15 @@ document.querySelectorAll('.service-card, .why-item, .benefit, .info-card').forE
 });
 
 // ================= APPLICATION STATUS DASHBOARD =================
-const API_BASE = window.location.port === '3000' ? '' : 'http://127.0.0.1:3000';
+const getAPIBase = () => {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return (window.location.port === '3000' || window.location.port === '5500') 
+            ? ''
+            : 'http://127.0.0.1:3000';
+    }
+    return `${window.location.protocol}//${window.location.host}`;
+};
+const API_BASE = getAPIBase();
 
 document.addEventListener('DOMContentLoaded', function() {
     const statusForm = document.getElementById('statusForm');

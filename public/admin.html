@@ -117,7 +117,15 @@
 <div id="applications"></div>
 
 <script>
-const API_BASE = window.location.port === '3000' ? '' : 'http://127.0.0.1:3000';
+const getAPIBase = () => {
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return (window.location.port === '3000' || window.location.port === '5500') 
+            ? ''
+            : 'http://127.0.0.1:3000';
+    }
+    return `${window.location.protocol}//${window.location.host}`;
+};
+const API_BASE = getAPIBase();
 
 async function loadApplications() {
     const key = document.getElementById('adminKey').value;
@@ -137,7 +145,8 @@ async function loadApplications() {
         const data = await res.json();
 
         if (!res.ok) {
-            alert(data.error);
+            console.error('Admin authentication error:', data);
+            alert('Error: ' + (data.error || 'Failed to authenticate. Check your admin key.'));
             return;
         }
 
@@ -211,7 +220,8 @@ async function loadApplications() {
         });
 
     } catch (err) {
-        alert("Failed to load applications");
+        console.error('Failed to load applications:', err);
+        alert("Failed to load applications: " + err.message);
     }
 }
 
@@ -257,10 +267,12 @@ async function updateStatus(applicationId, status) {
             alert(`Application ${status} successfully!`);
             loadApplications(); // Reload the applications list
         } else {
-            alert(data.error);
+            console.error('Status update error:', data);
+            alert('Error: ' + (data.error || 'Failed to update application status'));
         }
     } catch (err) {
-        alert("Failed to update status");
+        console.error('Failed to update status:', err);
+        alert("Failed to update status: " + err.message);
     }
 }
 
