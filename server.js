@@ -48,20 +48,26 @@ const upload = multer({
 // 🔥 UPLOAD TO SUPABASE
 const uploadToSupabase = async (file, folder) => {
     const fileName = `${folder}/${Date.now()}-${file.originalname}`;
+    console.log(`[uploadToSupabase] Uploading to: ${fileName}`);
 
-    const { error } = await supabase.storage
+    const { error, data: uploadData } = await supabase.storage
         .from('applications')
         .upload(fileName, file.buffer, {
             contentType: file.mimetype,
             upsert: true
         });
 
-    if (error) throw error;
+    if (error) {
+        console.error(`[uploadToSupabase] Upload error:`, error);
+        throw new Error(`Supabase storage error: ${error.message}`);
+    }
 
+    console.log(`[uploadToSupabase] Upload successful, getting public URL...`);
     const { data } = supabase.storage
         .from('applications')
         .getPublicUrl(fileName);
 
+    console.log(`[uploadToSupabase] Public URL: ${data.publicUrl}`);
     return data.publicUrl;
 };
 
@@ -78,6 +84,7 @@ app.post('/api/applications', upload.fields([
     { name: 'otherDocs', maxCount: 10 }
 ]), async (req, res) => {
     try {
+        console.log('📝 Received application submission');
         const applicationId = Date.now().toString();
 
         const applicationData = {
@@ -100,21 +107,31 @@ app.post('/api/applications', upload.fields([
         };
 
         // Upload files
-        if (req.files) {
+        if (req.files && Object.keys(req.files).length > 0) {
+            console.log('📤 Uploading files to Supabase...');
             for (const fieldName of Object.keys(req.files)) {
                 applicationData.files[fieldName] = [];
 
                 for (const file of req.files[fieldName]) {
-                    const url = await uploadToSupabase(file, req.body.type);
+                    try {
+                        console.log(`  - Uploading ${file.originalname}...`);
+                        const url = await uploadToSupabase(file, req.body.type);
+                        console.log(`    ✅ ${file.originalname} uploaded`);
 
-                    applicationData.files[fieldName].push({
-                        originalname: file.originalname,
-                        url,
-                        size: file.size,
-                        mimetype: file.mimetype
-                    });
+                        applicationData.files[fieldName].push({
+                            originalname: file.originalname,
+                            url,
+                            size: file.size,
+                            mimetype: file.mimetype
+                        });
+                    } catch (fileError) {
+                        console.error(`  ❌ Failed to upload ${file.originalname}:`, fileError.message);
+                        throw new Error(`File upload failed: ${file.originalname} - ${fileError.message}`);
+                    }
                 }
             }
+        } else {
+            console.log('⚠️ No files uploaded');
         }
 
         // Extra data
@@ -133,19 +150,22 @@ app.post('/api/applications', upload.fields([
         }
 
         // Save to DB
+        console.log('💾 Saving application to database...');
         const { error } = await supabase
             .from('applications')
             .insert([{
                 id: applicationId,
                 type: applicationData.type,
                 timestamp: applicationData.timestamp,
-                status: 'pending', // Add status field
                 data: applicationData
             }]);
 
-        if (error) throw error;
+        if (error) {
+            console.error('❌ Database insert error:', error.message, error.details, error.hint);
+            throw error;
+        }
 
-        console.log('✅ Saved:', applicationId);
+        console.log('✅ Application saved successfully:', applicationId);
 
         res.json({
             success: true,
@@ -153,8 +173,12 @@ app.post('/api/applications', upload.fields([
         });
 
     } catch (error) {
-        console.error('❌ ERROR:', error);
-        res.status(500).json({ error: 'Failed to submit application' });
+        console.error('❌ APPLICATION SUBMISSION ERROR:', error.message);
+        console.error('Full error:', error);
+        res.status(500).json({ 
+            error: error.message || 'Failed to submit application',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
     }
 });
 
@@ -227,27 +251,15 @@ app.post('/api/admin/applications/:id/status', async (req, res) => {
         const { error } = await supabase
             .from('applications')
             .update({
-                data: updatedData,
-                status: status // Also try to update the top-level status field
+                data: updatedData
             })
             .eq('id', id);
 
         if (error) {
-            console.error('❌ Primary update error:', error);
-            // If the status column doesn't exist, try updating just the data field
-            const { error: fallbackError } = await supabase
-                .from('applications')
-                .update({ data: updatedData })
-                .eq('id', id);
-
-            if (fallbackError) {
-                console.error('❌ Fallback update error:', fallbackError);
-                throw fallbackError;
-            } else {
-                console.log('✅ Fallback update successful');
-            }
+            console.error('❌ Update error:', error.message, error.details, error.hint);
+            throw error;
         } else {
-            console.log('✅ Primary update successful');
+            console.log('✅ Update successful');
         }
 
         res.json({
