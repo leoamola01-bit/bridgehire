@@ -37,19 +37,71 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
 
-        .section {
-            margin-top: 10px;
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
         }
 
-        .section h4 {
-            margin-bottom: 5px;
-            color: #333;
+        .status-pending {
+            background: #fef3c7;
+            color: #d97706;
         }
 
-        .files a {
-            display: block;
-            color: blue;
-            margin: 3px 0;
+        .status-approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-rejected {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .action-buttons {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .btn-approve {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-approve:hover {
+            background: #059669;
+        }
+
+        .btn-reject {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-reject:hover {
+            background: #dc2626;
+        }
+
+        .btn-notes {
+            background: #6b7280;
+            color: white;
+        }
+
+        .btn-notes:hover {
+            background: #4b5563;
         }
     </style>
 </head>
@@ -65,6 +117,8 @@
 <div id="applications"></div>
 
 <script>
+const API_BASE = window.location.port === '3000' ? '' : 'http://127.0.0.1:3000';
+
 async function loadApplications() {
     const key = document.getElementById('adminKey').value;
 
@@ -74,7 +128,7 @@ async function loadApplications() {
     }
 
     try {
-        const res = await fetch('/api/admin/applications', {
+        const res = await fetch(`${API_BASE}/api/admin/applications`, {
             headers: {
                 "Authorization": key.trim()
             }
@@ -97,7 +151,11 @@ async function loadApplications() {
             const info = app.data;
 
             div.innerHTML = `
-                <h3>${info.personalDetails.fullName}</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3>${info.personalDetails.fullName}</h3>
+                    <div class="status-badge status-${app.status || app.data.status || 'pending'}">${app.status || app.data.status || 'pending'}</div>
+                </div>
+                <p><b>Application ID:</b> ${app.id}</p>
                 <p><b>Application Type:</b> ${info.type}</p>
 
                 <div class="section">
@@ -135,6 +193,18 @@ async function loadApplications() {
                         ${renderFiles(info.files)}
                     </div>
                 </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-approve" onclick="updateStatus('${app.id}', 'approved')">
+                        <i class="fas fa-check"></i> Approve
+                    </button>
+                    <button class="btn btn-reject" onclick="updateStatus('${app.id}', 'rejected')">
+                        <i class="fas fa-times"></i> Reject
+                    </button>
+                    <button class="btn btn-notes" onclick="addNotes('${app.id}')">
+                        <i class="fas fa-sticky-note"></i> Add Notes
+                    </button>
+                </div>
             `;
 
             container.appendChild(div);
@@ -157,6 +227,79 @@ function renderFiles(files) {
     }
 
     return html || "No files uploaded";
+}
+
+async function updateStatus(applicationId, status) {
+    const key = document.getElementById('adminKey').value;
+
+    if (!key) {
+        alert("Enter admin key first");
+        return;
+    }
+
+    if (!confirm(`Are you sure you want to ${status} this application?`)) {
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/applications/${applicationId}/status`, {
+            method: 'POST',
+            headers: {
+                "Authorization": key.trim(),
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ status })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            alert(`Application ${status} successfully!`);
+            loadApplications(); // Reload the applications list
+        } else {
+            alert(data.error);
+        }
+    } catch (err) {
+        alert("Failed to update status");
+    }
+}
+
+function addNotes(applicationId) {
+    const notes = prompt("Enter notes for this application:");
+    if (notes !== null && notes.trim()) {
+        updateStatusWithNotes(applicationId, notes);
+    }
+}
+
+async function updateStatusWithNotes(applicationId, notes) {
+    const key = document.getElementById('adminKey').value;
+
+    if (!key) {
+        alert("Enter admin key first");
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_BASE}/api/admin/applications/${applicationId}/status`, {
+            method: 'POST',
+            headers: {
+                "Authorization": key.trim(),
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ status: 'pending', notes })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            alert("Notes added successfully!");
+            loadApplications(); // Reload the applications list
+        } else {
+            alert(data.error);
+        }
+    } catch (err) {
+        alert("Failed to add notes");
+    }
 }
 </script>
 

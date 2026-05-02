@@ -1312,3 +1312,67 @@ h2 {
 ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(135deg, #9333ea, #00d4ff);
 }
+
+/* Multiple Applications View */
+.multiple-applications-view h3 {
+    color: #e2e8f0;
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.applications-list {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.application-summary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.application-summary:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(0, 245, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.summary-header h4 {
+    color: #e2e8f0;
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.summary-details p {
+    color: #94a3b8;
+    margin: 0.25rem 0;
+    font-size: 0.9rem;
+}
+
+.summary-actions {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.summary-actions .btn {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+}
+
+.back-to-search {
+    text-align: center;
+    margin-top: 2rem;
+}

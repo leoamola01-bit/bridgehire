@@ -70,7 +70,6 @@ app.post('/api/applications', upload.fields([
     { name: 'passport', maxCount: 1 },
     { name: 'cv', maxCount: 1 },
     { name: 'birthCert', maxCount: 1 },
-    { name: 'paymentProof', maxCount: 1 },
     { name: 'olevel', maxCount: 1 },
     { name: 'alevel', maxCount: 1 },
     { name: 'diploma', maxCount: 1 },
@@ -140,6 +139,7 @@ app.post('/api/applications', upload.fields([
                 id: applicationId,
                 type: applicationData.type,
                 timestamp: applicationData.timestamp,
+                status: 'pending', // Add status field
                 data: applicationData
             }]);
 
@@ -184,32 +184,106 @@ app.get('/api/admin/applications', async (req, res) => {
     }
 });
 
+// 🔐 ADMIN UPDATE APPLICATION STATUS
+app.post('/api/admin/applications/:id/status', async (req, res) => {
+    const adminKey = req.headers.authorization;
+
+    if (adminKey !== "my-secret-key") {
+        return res.status(403).json({ error: "Unauthorized" });
+    }
+
+    try {
+        const { id } = req.params;
+        const { status, notes } = req.body;
+
+        console.log('🔄 Status update request:', { id, status, notes });
+
+        if (!['approved', 'rejected', 'pending'].includes(status)) {
+            return res.status(400).json({ error: 'Invalid status. Must be approved, rejected, or pending' });
+        }
+
+        // First, get the current application data
+        const { data: existingApp, error: fetchError } = await supabase
+            .from('applications')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (fetchError || !existingApp) {
+            console.log('❌ Application not found:', fetchError);
+            return res.status(404).json({ error: 'Application not found' });
+        }
+
+        console.log('📋 Current application data:', existingApp);
+
+        // Update the data object with status and notes
+        const updatedData = { ...existingApp.data };
+        if (status) updatedData.status = status;
+        if (notes) updatedData.notes = notes;
+
+        console.log('📝 Updated data object:', updatedData);
+
+        // Update the application
+        const { error } = await supabase
+            .from('applications')
+            .update({
+                data: updatedData,
+                status: status // Also try to update the top-level status field
+            })
+            .eq('id', id);
+
+        if (error) {
+            console.error('❌ Primary update error:', error);
+            // If the status column doesn't exist, try updating just the data field
+            const { error: fallbackError } = await supabase
+                .from('applications')
+                .update({ data: updatedData })
+                .eq('id', id);
+
+            if (fallbackError) {
+                console.error('❌ Fallback update error:', fallbackError);
+                throw fallbackError;
+            } else {
+                console.log('✅ Fallback update successful');
+            }
+        } else {
+            console.log('✅ Primary update successful');
+        }
+
+        res.json({
+            success: true,
+            message: `Application ${status}`
+        });
+
+    } catch (error) {
+        console.error('❌ Status update error:', error);
+        res.status(500).json({ error: 'Error updating application status' });
+    }
+});
+
 // 🚀 CUSTOMER STATUS CHECK
 app.post('/api/status', async (req, res) => {
     try {
-        const { email, applicationId } = req.body;
+        const { applicationId } = req.body;
 
-        if (!email || !applicationId) {
-            return res.status(400).json({ error: 'Email and Application ID are required' });
+        if (!applicationId) {
+            return res.status(400).json({ error: 'Application ID is required' });
         }
 
-        // Find application by ID and email
         const { data, error } = await supabase
             .from('applications')
             .select('*')
             .eq('id', applicationId)
-            .eq('data->contactDetails->email', email)
             .single();
 
         if (error || !data) {
-            return res.status(404).json({ error: 'Application not found. Please check your email and application ID.' });
+            return res.status(404).json({ error: 'Application not found. Please check your Application ID.' });
         }
 
         res.json({
             success: true,
             application: data
         });
-
     } catch (error) {
         console.error('Status check error:', error);
         res.status(500).json({ error: 'Error checking application status' });

@@ -83,8 +83,10 @@ window.onclick = function(event) {
 };
 
 // 🔥 IMPORTANT: PUT YOUR RENDER BACKEND URL HERE
-const API_URL = window.location.hostname === 'localhost' 
-    ? '/api/applications' 
+const API_URL = window.location.hostname === 'localhost' && window.location.port === '3000'
+    ? '/api/applications'
+    : window.location.hostname === 'localhost' && window.location.port === '5500'
+    ? 'http://127.0.0.1:3000/api/applications'
     : "https://bridgehire-tmd7.onrender.com/api/applications";
 
 // ================= JOB FORM =================
@@ -188,6 +190,8 @@ document.querySelectorAll('.service-card, .why-item, .benefit, .info-card').forE
 });
 
 // ================= APPLICATION STATUS DASHBOARD =================
+const API_BASE = window.location.port === '3000' ? '' : 'http://127.0.0.1:3000';
+
 document.addEventListener('DOMContentLoaded', function() {
     const statusForm = document.getElementById('statusForm');
     const applicationStatus = document.getElementById('applicationStatus');
@@ -196,49 +200,47 @@ document.addEventListener('DOMContentLoaded', function() {
         statusForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const email = document.getElementById('email').value.trim();
             const applicationId = document.getElementById('applicationId').value.trim();
 
-            if (!email || !applicationId) {
-                showError('Please fill in all fields');
-                return;
+        if (!applicationId) {
+            showError('Please enter your Application ID');
+            return;
+        }
+
+        // Show loading state
+        const submitBtn = statusForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span class="loading"></span>Checking...';
+        submitBtn.disabled = true;
+
+        try {
+            const response = await fetch(`${API_BASE}/api/status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    applicationId: applicationId
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                displayApplicationStatus(data.application);
+                applicationStatus.style.display = 'block';
+                applicationStatus.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                showError(data.error || 'Application not found');
             }
-
-            // Show loading state
-            const submitBtn = statusForm.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<span class="loading"></span>Checking...';
-            submitBtn.disabled = true;
-
-            try {
-                const response = await fetch('/api/status', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        email: email,
-                        applicationId: applicationId
-                    })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    displayApplicationStatus(data.application);
-                    applicationStatus.style.display = 'block';
-                    applicationStatus.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                } else {
-                    showError(data.error || 'Application not found');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showError('Network error. Please try again later.');
-            } finally {
-                // Reset button
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            }
+        } catch (error) {
+            console.error('Error:', error);
+            showError('Network error. Please try again later.');
+        } finally {
+            // Reset button
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
         });
     }
 });
@@ -299,19 +301,29 @@ function displayApplicationStatus(application) {
 }
 
 function getApplicationStatus(application) {
-    const submittedDate = new Date(application.timestamp);
-    const now = new Date();
-    const daysSinceSubmission = Math.floor((now - submittedDate) / (1000 * 60 * 60 * 24));
+    const status = application.status || application.data.status || 'pending';
 
-    // Simple status logic - you can customize this based on your business rules
-    if (daysSinceSubmission < 3) {
-        return { class: 'pending', text: 'Submitted' };
-    } else if (daysSinceSubmission < 14) {
-        return { class: 'reviewing', text: 'Under Review' };
-    } else if (daysSinceSubmission < 30) {
-        return { class: 'reviewing', text: 'Processing' };
-    } else {
-        return { class: 'approved', text: 'In Progress' };
+    switch (status) {
+        case 'approved':
+            return { class: 'approved', text: 'Approved' };
+        case 'rejected':
+            return { class: 'rejected', text: 'Rejected' };
+        case 'pending':
+        default:
+            // Fallback to time-based logic for pending applications
+            const submittedDate = new Date(application.timestamp);
+            const now = new Date();
+            const daysSinceSubmission = Math.floor((now - submittedDate) / (1000 * 60 * 60 * 24));
+
+            if (daysSinceSubmission < 3) {
+                return { class: 'pending', text: 'Submitted' };
+            } else if (daysSinceSubmission < 14) {
+                return { class: 'reviewing', text: 'Under Review' };
+            } else if (daysSinceSubmission < 30) {
+                return { class: 'reviewing', text: 'Processing' };
+            } else {
+                return { class: 'reviewing', text: 'In Progress' };
+            }
     }
 }
 
@@ -375,7 +387,6 @@ function displayDocuments(application) {
         passport: { icon: 'fas fa-passport', label: 'Passport/ID' },
         cv: { icon: 'fas fa-file-alt', label: 'CV/Resume' },
         birthCert: { icon: 'fas fa-certificate', label: 'Birth Certificate' },
-        paymentProof: { icon: 'fas fa-credit-card', label: 'Payment Proof' },
         olevel: { icon: 'fas fa-graduation-cap', label: 'O-Level Results' },
         alevel: { icon: 'fas fa-graduation-cap', label: 'A-Level Results' },
         diploma: { icon: 'fas fa-certificate', label: 'Diploma Certificate' },
@@ -412,16 +423,25 @@ function displayNotes(application) {
     const notesSection = document.getElementById('notesSection');
     const notesContent = document.getElementById('notesContent');
 
-    // You can customize this based on your application status
-    const status = getApplicationStatus(application);
     let notes = '';
 
-    if (status.class === 'pending') {
-        notes = 'Your application is being processed. We will contact you within 3-5 business days with an update.';
-    } else if (status.class === 'reviewing') {
-        notes = 'Your application is under review. Our team is carefully evaluating your qualifications and documents.';
-    } else if (status.class === 'approved') {
-        notes = 'Congratulations! Your application has been approved. Our team will contact you shortly with next steps.';
+    // Show admin notes if they exist (check both top-level and data object)
+    if (application.notes) {
+        notes = `<strong>Admin Notes:</strong> ${application.notes}`;
+    } else if (application.data && application.data.notes) {
+        notes = `<strong>Admin Notes:</strong> ${application.data.notes}`;
+    } else {
+        // Default status-based notes
+        const status = getApplicationStatus(application);
+        if (status.class === 'pending') {
+            notes = 'Your application is being processed. We will contact you within 3-5 business days with an update.';
+        } else if (status.class === 'reviewing') {
+            notes = 'Your application is under review. Our team is carefully evaluating your qualifications and documents.';
+        } else if (status.class === 'approved') {
+            notes = 'Congratulations! Your application has been approved. Our team will contact you shortly with next steps.';
+        } else if (status.class === 'rejected') {
+            notes = 'We regret to inform you that your application has not been approved at this time. Please contact us for more information.';
+        }
     }
 
     if (notes) {
@@ -442,3 +462,4 @@ function formatDate(dateString) {
         minute: '2-digit'
     });
 }
+

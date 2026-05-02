@@ -139,8 +139,8 @@
             </div>
 
             <div class="job-application glass-card">
-                <h3>Ready to Apply? <span class="fee-notice">US$30 Application Fee Required</span></h3>
-                <p class="fee-explanation">This non-refundable fee ensures only serious applicants proceed, saving time for genuine candidates.</p>
+                <h3>Ready to Apply? <span class="fee-notice">Free Application - Pay Only After Approval</span></h3>
+                <p class="fee-explanation">Submit your application for free. Payment is required only if you are approved and qualify for the position.</p>
                 <button class="btn btn-primary" onclick="openJobModal()">
                     <i class="fas fa-paper-plane"></i> Apply for Job Now
                 </button>
@@ -208,8 +208,8 @@
             </div>
 
             <div class="scholarship-application glass-card">
-                <h3>Apply for Scholarship <span class="fee-notice">US$25 Application Fee Required</span></h3>
-                <p class="fee-explanation">This ensures serious applicants and helps maintain quality service.</p>
+                <h3>Apply for Scholarship <span class="fee-notice">Free Application - Pay Only After Approval</span></h3>
+                <p class="fee-explanation">Submit your application for free. Payment is required only if you are approved and qualify for the scholarship.</p>
                 <button class="btn btn-primary" onclick="openScholarshipModal()">
                     <i class="fas fa-book-open"></i> Apply for Scholarship
                 </button>
@@ -298,11 +298,11 @@
                 </div>
                 <div class="faq-item">
                     <div class="faq-question">
-                        <span>Is the application fee refundable?</span>
+                        <span>Is there an application fee?</span>
                         <i class="fas fa-chevron-down"></i>
                     </div>
                     <div class="faq-answer">
-                        <p>No, it's a processing fee to ensure serious applicants only.</p>
+                        <p>No, applications are completely free. You only pay after your application is reviewed and approved.</p>
                     </div>
                 </div>
             </div>
@@ -344,15 +344,15 @@
 
             <!-- Status Check Form -->
             <div class="status-card glass-card">
-                <h3><i class="fas fa-search"></i> Enter Your Details</h3>
-                <p>Enter your email address and application ID to view your application status</p>
+                <h3><i class="fas fa-search"></i> Enter Your Application ID</h3>
+                <p>Use your Application ID to view the current status of your application.</p>
                 
                 <div class="status-help">
-                    <p><i class="fas fa-info-circle"></i> <strong>How to get your Application ID:</strong></p>
+                    <p><i class="fas fa-info-circle"></i> <strong>Check Your Application Status:</strong></p>
                     <ul>
-                        <li>Application ID is provided after successful submission</li>
-                        <li>Check your email for confirmation (includes Application ID)</li>
-                        <li>Contact support if you can't find your ID</li>
+                        <li>Enter the Application ID you received after submission</li>
+                        <li>No email is required</li>
+                        <li>Contact support if you do not have your Application ID</li>
                     </ul>
                     <p class="apply-link">
                         <strong>Don't have an Application ID?</strong> 
@@ -363,7 +363,6 @@
 
                 <form id="statusForm">
                     <div class="form-row">
-                        <input type="email" id="email" placeholder="Email Address *" required>
                         <input type="text" id="applicationId" placeholder="Application ID *" required>
                     </div>
                     <button type="submit" class="btn btn-primary">
@@ -440,7 +439,7 @@
         <div class="modal-content">
             <span class="close" onclick="closeJobModal()">&times;</span>
             <h2><i class="fas fa-briefcase"></i> Job Application</h2>
-            <p class="fee-notice">US$30 Application Fee Required (Proof of payment mandatory)</p>
+            <p class="fee-notice">Free Application - Payment Required Only After Approval</p>
             <form id="jobForm" enctype="multipart/form-data">
                 <div class="form-group">
                     <h3><i class="fas fa-user"></i> Personal Details</h3>
@@ -504,10 +503,6 @@
                         <label>Birth Certificate *</label>
                         <input type="file" name="birthCert" accept=".pdf,.jpg,.png" required>
                     </div>
-                    <div class="upload-group">
-                        <label>Proof of Payment US$30 * (Screenshot/Receipt)</label>
-                        <input type="file" name="paymentProof" accept=".pdf,.jpg,.png" required>
-                    </div>
                     
                     <p><strong>Optional:</strong></p>
                     <div class="upload-group">
@@ -540,7 +535,7 @@
         <div class="modal-content">
             <span class="close" onclick="closeScholarshipModal()">&times;</span>
             <h2><i class="fas fa-graduation-cap"></i> Scholarship Application</h2>
-            <p class="fee-notice">US$25 Application Fee Required (Proof of payment mandatory)</p>
+            <p class="fee-notice">Free Application - Payment Required Only After Approval</p>
             <form id="scholarshipForm" enctype="multipart/form-data">
                 <div class="form-group">
                     <h3><i class="fas fa-user"></i> Personal Details</h3>
@@ -587,10 +582,6 @@
                         <label>O-Level Certificate * (Must include English)</label>
                         <input type="file" name="olevelCert" accept=".pdf,.jpg,.png" required>
                     </div>
-                    <div class="upload-group">
-                        <label>Proof of Payment US$25 * (Screenshot/Receipt)</label>
-                        <input type="file" name="paymentProof" accept=".pdf,.jpg,.png" required>
-                    </div>
                     
                     <p><strong>Optional:</strong></p>
                     <div class="upload-group">
@@ -624,7 +615,7 @@
                 </div>
                 <p class="application-id-note">
                     <i class="fas fa-info-circle"></i> 
-                    <strong>Save this ID!</strong> You'll need it along with your email address to check your application status.
+                    <strong>Save this ID!</strong> You'll need it to check your application status.
                 </p>
             </div>
             
